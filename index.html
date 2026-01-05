@@ -16,7 +16,7 @@
     <meta name="apple-mobile-web-app-title" content="TU-3 Tuner" />
     <link
       rel="manifest"
-      href="data:application/json;base64,ewogICJuYW1lIjogIkNocm9tYXRpYyBUdW5lciBUVS0zIiwKICAic2hvcnRfbmFtZSI6ICJUVS0zIiwKICAiZGVzY3JpcHRpb24iOiAiQWZpbmFkb3IgQ3JvbcOhdGljbyBFc3RpbG8gQm9zcyBUVS0zIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxYTFhMWEiLAogICJ0aGVtZV9jb2xvciI6ICIjMTExODI3IiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWwsJTNDc3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDUxMiA1MTInJTNFJTNDcmVjdCB3aWR0aD0nNTEyJyBoZWlnaHQ9JzUxMicgZmlsbD0nJTIzZmYwMDAwJy8lM0UlM0N0ZXh0IHg9JzUwJTI1JyB5PSc1MCUyNScgZm9udC1zaXplPScyMDAnIGZvbnQtd2VpZ2h0PSdib2xkJyBmb250LWZhbWlseT0nbW9ub3NwYWNlJyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZScgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZSclM0VUVTMlM0MvdGV4dCUzRSUzQy9zdmclM0UiLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiLAogICAgICAicHVycG9zZSI6ICJhbnkgbWFza2FibGUiCiAgICB9CiAgXQp9"
+      href="data:application/json;base64,ewogICJuYW1lIjogIkNocm9tYXRpYyBUdW5lciBUVS0zIiwKICAic2hvcnRfbmFtZSI6ICJUVS0zIiwKICAiZGVzY3JpcHRpb24iOiAiQWZpbmFkb3IgQ3JvbcOhdGljbyBFc3RpbG8gQm9zcyBUVS0zIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxYTFhMWEiLAogICJ0aGVtZV9jb2xvciI6ICIjMTExODI3IiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWwsJTNDc3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDUxMiA1MTInJTNFJTNDcmVjdCB3aWR0aD0nNTEyJyBoZWlnaHQ9JzUxMicgZmlsbD0nJTIzZmYwMDAwJy8lM0UlM0N0ZXh0IHg9JzUwJTI1JyB5PSc1MCUyNScgZm9udC1zaXplPScyMDAnIGZvbnQtd2VpZ2h0PSdib2xkJyBmb250LWZhbWlseT0nbW9ub3NwYWNlJyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZScgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZSclM0VUVTMlM0MvdGV4dCUzRSUzQy9zdmclM0U"LAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiLAogICAgICAicHVycG9zZSI6ICJhbnkgbWFza2FibGUiCiAgICB9CiAgXQp9"
     />
     <title>Chromatic Tuner TU-3</title>
 
@@ -76,7 +76,8 @@
         background: rgba(255, 255, 255, 0.05);
         border-radius: 2px;
         position: relative;
-        transition: all 0.1s ease;
+        transition: all 0.05s ease;
+        will-change: background, box-shadow;
       }
 
       .led-segment.active-green {
@@ -118,6 +119,7 @@
         line-height: 1;
         min-width: 120px;
         text-align: center;
+        transition: color 0.1s ease, text-shadow 0.1s ease;
       }
 
       .note-display.tuned {
@@ -139,6 +141,7 @@
         font-weight: 700;
         margin-top: 8px;
         letter-spacing: 1px;
+        transition: color 0.1s ease;
       }
 
       .cents-display.tuned {
@@ -365,6 +368,7 @@
           cents: 0,
           freq: 0,
         });
+        const pitchHistory = useRef([]);
 
         const tunings = {
           guitar: ["E2", "A2", "D3", "G3", "B3", "E4"],
@@ -415,7 +419,6 @@
         }, [isListening]);
 
         const autoCorrelate = (buffer, sampleRate) => {
-          // Cálculo de RMS para detecção de sinal
           let sum = 0;
           for (let i = 0; i < buffer.length; i++) {
             sum += buffer[i] * buffer[i];
@@ -423,64 +426,41 @@
           const rms = Math.sqrt(sum / buffer.length);
           setSignal(rms);
 
-          // Threshold mais alto para evitar ruído
-          if (rms < 0.015) return null;
+          if (rms < 0.01) return null;
 
           const SIZE = buffer.length;
           const MAX_SAMPLES = Math.floor(SIZE / 2);
-          const yin = new Float32Array(MAX_SAMPLES);
-
-          // Algoritmo YIN aprimorado
-          for (let tau = 0; tau < MAX_SAMPLES; tau++) {
-            for (let i = 0; i < MAX_SAMPLES; i++) {
-              const delta = buffer[i] - buffer[i + tau];
-              yin[tau] += delta * delta;
-            }
-          }
-
-          // Normalização cumulativa
-          yin[0] = 1;
-          let runningSum = 0;
-          for (let tau = 1; tau < MAX_SAMPLES; tau++) {
-            runningSum += yin[tau];
-            yin[tau] = runningSum === 0 ? 1 : (yin[tau] * tau) / runningSum;
-          }
-
-          // Threshold mais rigoroso para maior precisão
-          const threshold = 0.1;
-          let tau = 2;
-
-          // Busca pelo primeiro mínimo abaixo do threshold
-          while (tau < MAX_SAMPLES) {
-            if (yin[tau] < threshold) {
-              while (tau + 1 < MAX_SAMPLES && yin[tau + 1] < yin[tau]) {
-                tau++;
-              }
-              break;
-            }
-            tau++;
-          }
-
-          if (tau === MAX_SAMPLES || yin[tau] >= threshold) return null;
-
-          // Interpolação parabólica para sub-sample precision
-          let betterTau = tau;
-          if (tau > 0 && tau < MAX_SAMPLES - 1) {
-            const s0 = yin[tau - 1];
-            const s1 = yin[tau];
-            const s2 = yin[tau + 1];
-            const denominator = 2 * (2 * s1 - s2 - s0);
-            if (Math.abs(denominator) > 0.0001) {
-              betterTau = tau + (s2 - s0) / denominator;
-            }
-          }
-
-          const frequency = sampleRate / betterTau;
           
-          // Filtrar frequências inválidas
-          if (frequency < 30 || frequency > 1200) return null;
+          let bestOffset = -1;
+          let bestCorrelation = 0;
+          let foundGoodCorrelation = false;
+          
+          for (let offset = 1; offset < MAX_SAMPLES; offset++) {
+            let correlation = 0;
+            
+            for (let i = 0; i < MAX_SAMPLES; i++) {
+              correlation += Math.abs(buffer[i] - buffer[i + offset]);
+            }
+            
+            correlation = 1 - (correlation / MAX_SAMPLES);
+            
+            if (correlation > 0.9 && !foundGoodCorrelation) {
+              foundGoodCorrelation = true;
+              bestCorrelation = correlation;
+              bestOffset = offset;
+            }
+            
+            if (foundGoodCorrelation && correlation > bestCorrelation) {
+              bestCorrelation = correlation;
+              bestOffset = offset;
+            }
+          }
 
-          return frequency;
+          if (bestCorrelation > 0.9 && bestOffset !== -1) {
+            return sampleRate / bestOffset;
+          }
+
+          return null;
         };
 
         const freqToNote = (frequency) => {
@@ -526,32 +506,28 @@
 
           if (freq && freq > 30 && freq < 1200) {
             const noteInfo = freqToNote(freq);
-
-            const lastNote = lastGoodPitch.current;
             
-            // Suavização inteligente apenas para cents
-            if (
-              noteInfo.note === lastNote.note &&
-              noteInfo.octave === lastNote.octave &&
-              lastNote.note !== "--"
-            ) {
-              // Mesma nota: suaviza os cents para estabilidade visual
-              const smoothedCents = Math.round(
-                lastNote.cents * 0.7 + noteInfo.cents * 0.3
-              );
-              noteInfo.cents = smoothedCents;
+            pitchHistory.current.push(noteInfo);
+            if (pitchHistory.current.length > 3) {
+              pitchHistory.current.shift();
             }
 
-            // Atualiza sempre que houver mudança significativa
-            if (
-              noteInfo.note !== lastNote.note ||
-              noteInfo.octave !== lastNote.octave ||
-              Math.abs(noteInfo.cents - lastNote.cents) > 1 ||
-              lastNote.note === "--"
-            ) {
-              lastGoodPitch.current = noteInfo;
-              setPitch(noteInfo);
+            if (pitchHistory.current.length >= 2) {
+              const recentNotes = pitchHistory.current.slice(-2);
+              const allSameNote = recentNotes.every(
+                p => p.note === noteInfo.note && p.octave === noteInfo.octave
+              );
+
+              if (allSameNote) {
+                const avgCents = Math.round(
+                  recentNotes.reduce((sum, p) => sum + p.cents, 0) / recentNotes.length
+                );
+                noteInfo.cents = avgCents;
+              }
             }
+
+            lastGoodPitch.current = noteInfo;
+            setPitch(noteInfo);
           }
 
           requestRef.current = requestAnimationFrame(update);
@@ -570,6 +546,7 @@
               cents: 0,
               freq: 0,
             };
+            pitchHistory.current = [];
             setSignal(0);
           } else {
             try {
@@ -579,7 +556,7 @@
                   echoCancellation: false,
                   noiseSuppression: false,
                   autoGainControl: false,
-                  sampleRate: 44100,
+                  sampleRate: 48000,
                   latency: 0,
                 },
               });
@@ -587,12 +564,12 @@
 
               audioCtx.current = new (window.AudioContext ||
                 window.webkitAudioContext)({
-                sampleRate: 44100,
+                sampleRate: 48000,
                 latencyHint: "interactive",
               });
 
               analyser.current = audioCtx.current.createAnalyser();
-              analyser.current.fftSize = 16384; // Aumentado para maior precisão
+              analyser.current.fftSize = 4096;
               analyser.current.smoothingTimeConstant = 0;
 
               dataArray.current = new Float32Array(analyser.current.fftSize);
@@ -725,7 +702,7 @@
                 </select>
                 <div
                   className={`signal-indicator ${
-                    signal > 0.015 ? "active" : ""
+                    signal > 0.01 ? "active" : ""
                   }`}
                 ></div>
               </div>
@@ -751,7 +728,6 @@
       const root = ReactDOM.createRoot(document.getElementById("root"));
       root.render(<TunerApp />);
 
-      // Service Worker Registration for PWA
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
           const swCode = `
