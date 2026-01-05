@@ -415,6 +415,7 @@
         }, [isListening]);
 
         const autoCorrelate = (buffer, sampleRate) => {
+          // Cálculo de RMS para detecção de sinal
           let sum = 0;
           for (let i = 0; i < buffer.length; i++) {
             sum += buffer[i] * buffer[i];
@@ -422,12 +423,14 @@
           const rms = Math.sqrt(sum / buffer.length);
           setSignal(rms);
 
-          if (rms < 0.01) return null;
+          // Threshold mais alto para evitar ruído
+          if (rms < 0.015) return null;
 
           const SIZE = buffer.length;
           const MAX_SAMPLES = Math.floor(SIZE / 2);
           const yin = new Float32Array(MAX_SAMPLES);
 
+          // Algoritmo YIN aprimorado
           for (let tau = 0; tau < MAX_SAMPLES; tau++) {
             for (let i = 0; i < MAX_SAMPLES; i++) {
               const delta = buffer[i] - buffer[i + tau];
@@ -435,6 +438,7 @@
             }
           }
 
+          // Normalização cumulativa
           yin[0] = 1;
           let runningSum = 0;
           for (let tau = 1; tau < MAX_SAMPLES; tau++) {
@@ -442,9 +446,11 @@
             yin[tau] = runningSum === 0 ? 1 : (yin[tau] * tau) / runningSum;
           }
 
-          const threshold = 0.15;
+          // Threshold mais rigoroso para maior precisão
+          const threshold = 0.1;
           let tau = 2;
 
+          // Busca pelo primeiro mínimo abaixo do threshold
           while (tau < MAX_SAMPLES) {
             if (yin[tau] < threshold) {
               while (tau + 1 < MAX_SAMPLES && yin[tau + 1] < yin[tau]) {
@@ -457,6 +463,7 @@
 
           if (tau === MAX_SAMPLES || yin[tau] >= threshold) return null;
 
+          // Interpolação parabólica para sub-sample precision
           let betterTau = tau;
           if (tau > 0 && tau < MAX_SAMPLES - 1) {
             const s0 = yin[tau - 1];
@@ -468,7 +475,12 @@
             }
           }
 
-          return sampleRate / betterTau;
+          const frequency = sampleRate / betterTau;
+          
+          // Filtrar frequências inválidas
+          if (frequency < 30 || frequency > 1200) return null;
+
+          return frequency;
         };
 
         const freqToNote = (frequency) => {
@@ -516,17 +528,27 @@
             const noteInfo = freqToNote(freq);
 
             const lastNote = lastGoodPitch.current;
-            const noteDiff = Math.abs(noteInfo.cents - lastNote.cents);
+            
+            // Suavização inteligente apenas para cents
+            if (
+              noteInfo.note === lastNote.note &&
+              noteInfo.octave === lastNote.octave &&
+              lastNote.note !== "--"
+            ) {
+              // Mesma nota: suaviza os cents para estabilidade visual
+              const smoothedCents = Math.round(
+                lastNote.cents * 0.7 + noteInfo.cents * 0.3
+              );
+              noteInfo.cents = smoothedCents;
+            }
 
+            // Atualiza sempre que houver mudança significativa
             if (
               noteInfo.note !== lastNote.note ||
               noteInfo.octave !== lastNote.octave ||
-              noteDiff > 5 ||
+              Math.abs(noteInfo.cents - lastNote.cents) > 1 ||
               lastNote.note === "--"
             ) {
-              lastGoodPitch.current = noteInfo;
-              setPitch(noteInfo);
-            } else if (noteDiff > 1) {
               lastGoodPitch.current = noteInfo;
               setPitch(noteInfo);
             }
@@ -570,7 +592,7 @@
               });
 
               analyser.current = audioCtx.current.createAnalyser();
-              analyser.current.fftSize = 8192;
+              analyser.current.fftSize = 16384; // Aumentado para maior precisão
               analyser.current.smoothingTimeConstant = 0;
 
               dataArray.current = new Float32Array(analyser.current.fftSize);
@@ -703,7 +725,7 @@
                 </select>
                 <div
                   className={`signal-indicator ${
-                    signal > 0.01 ? "active" : ""
+                    signal > 0.015 ? "active" : ""
                   }`}
                 ></div>
               </div>
