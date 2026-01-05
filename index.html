@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#111827" />
+    <meta name="description" content="Afinador Cromático Estilo Boss TU-3" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="TU-3 Tuner" />
+    <link
+      rel="manifest"
+      href="data:application/json;base64,ewogICJuYW1lIjogIkNocm9tYXRpYyBUdW5lciBUVS0zIiwKICAic2hvcnRfbmFtZSI6ICJUVS0zIiwKICAiZGVzY3JpcHRpb24iOiAiQWZpbmFkb3IgQ3JvbcOhdGljbyBFc3RpbG8gQm9zcyBUVS0zIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxYTFhMWEiLAogICJ0aGVtZV9jb2xvciI6ICIjMTExODI3IiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWwsJTNDc3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDUxMiA1MTInJTNFJTNDcmVjdCB3aWR0aD0nNTEyJyBoZWlnaHQ9JzUxMicgZmlsbD0nJTIzZmYwMDAwJy8lM0UlM0N0ZXh0IHg9JzUwJTI1JyB5PSc1MCUyNScgZm9udC1zaXplPScyMDAnIGZvbnQtd2VpZ2h0PSdib2xkJyBmb250LWZhbWlseT0nbW9ub3NwYWNlJyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZScgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZSclM0VUVTMlM0MvdGV4dCUzRSUzQy9zdmclM0UiLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiLAogICAgICAicHVycG9zZSI6ICJhbnkgbWFza2FibGUiCiAgICB9CiAgXQp9"
+    />
+    <title>Chromatic Tuner TU-3</title>
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap");
+
+      * {
+        -webkit-tap-highlight-color: transparent;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: #1a1a1a;
+        color: white;
+        font-family: "Orbitron", -apple-system, sans-serif;
+        overflow-x: hidden;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .pedal-body {
+        width: 100%;
+        max-width: 380px;
+        background: linear-gradient(145deg, #e8e8e8, #ffffff);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        position: relative;
+      }
+
+      .display-area {
+        background: #000;
+        border-radius: 12px;
+        padding: 20px 15px;
+        box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.8),
+          0 2px 4px rgba(0, 0, 0, 0.3);
+        margin-bottom: 20px;
+      }
+
+      .led-bar-container {
+        display: flex;
+        gap: 3px;
+        justify-content: center;
+        margin-bottom: 15px;
+        height: 32px;
+      }
+
+      .led-segment {
+        flex: 1;
+        max-width: 18px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 2px;
+        position: relative;
+        transition: all 0.1s ease;
+      }
+
+      .led-segment.active-green {
+        background: #00ff00;
+        box-shadow: 0 0 12px #00ff00, inset 0 0 8px rgba(255, 255, 255, 0.5);
+      }
+
+      .led-segment.active-orange {
+        background: #ff8800;
+        box-shadow: 0 0 12px #ff8800, inset 0 0 8px rgba(255, 255, 255, 0.5);
+      }
+
+      .led-segment.active-red {
+        background: #ff0000;
+        box-shadow: 0 0 12px #ff0000, inset 0 0 8px rgba(255, 255, 255, 0.5);
+      }
+
+      .note-display-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .mode-label {
+        font-size: 9px;
+        color: #666;
+        letter-spacing: 1px;
+        font-weight: 700;
+      }
+
+      .note-display {
+        font-size: 56px;
+        font-weight: 900;
+        color: #ff0000;
+        text-shadow: 0 0 20px #ff0000;
+        font-family: "Orbitron", monospace;
+        letter-spacing: -2px;
+        line-height: 1;
+        min-width: 120px;
+        text-align: center;
+      }
+
+      .note-display.tuned {
+        color: #00ff00;
+        text-shadow: 0 0 20px #00ff00;
+      }
+
+      .check-indicator {
+        font-size: 11px;
+        color: #666;
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+
+      .cents-display {
+        text-align: center;
+        font-size: 13px;
+        color: #ff8800;
+        font-weight: 700;
+        margin-top: 8px;
+        letter-spacing: 1px;
+      }
+
+      .cents-display.tuned {
+        color: #00ff00;
+      }
+
+      .freq-display {
+        text-align: center;
+        font-size: 10px;
+        color: #666;
+        font-weight: 700;
+        margin-top: 4px;
+        letter-spacing: 0.5px;
+      }
+
+      .tuning-reference {
+        display: flex;
+        justify-content: space-around;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 8px;
+        border-radius: 6px;
+        margin-top: 12px;
+      }
+
+      .string-ref {
+        text-align: center;
+        font-size: 9px;
+        color: #888;
+        font-weight: 700;
+      }
+
+      .string-ref .number {
+        display: block;
+        color: #aaa;
+        margin-bottom: 2px;
+        font-size: 10px;
+      }
+
+      .controls-area {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .button-row {
+        display: flex;
+        gap: 10px;
+      }
+
+      .mode-button {
+        flex: 1;
+        padding: 12px;
+        background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+        border: 2px solid #333;
+        border-radius: 8px;
+        color: #999;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: "Orbitron", sans-serif;
+      }
+
+      .mode-button.active {
+        background: linear-gradient(145deg, #444, #333);
+        border-color: #666;
+        color: #ff0000;
+        text-shadow: 0 0 8px #ff0000;
+      }
+
+      .input-select {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+        border: 2px solid #333;
+        border-radius: 8px;
+        color: #999;
+        font-size: 10px;
+        font-weight: 700;
+        font-family: "Orbitron", sans-serif;
+        appearance: none;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .input-select option {
+        background: #1a1a1a;
+        color: #999;
+      }
+
+      .signal-indicator {
+        position: absolute;
+        top: 50%;
+        right: 12px;
+        transform: translateY(-50%);
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #333;
+        transition: all 0.2s;
+      }
+
+      .signal-indicator.active {
+        background: #00ff00;
+        box-shadow: 0 0 10px #00ff00;
+      }
+
+      .footswitch {
+        width: 100%;
+        height: 80px;
+        margin-top: 15px;
+        background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        position: relative;
+        box-shadow: 0 6px 0 #1a1a1a, 0 8px 15px rgba(0, 0, 0, 0.4);
+        transition: all 0.1s;
+      }
+
+      .footswitch:active {
+        transform: translateY(4px);
+        box-shadow: 0 2px 0 #1a1a1a, 0 4px 10px rgba(0, 0, 0, 0.4);
+      }
+
+      .footswitch-led {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #3a3a3a;
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        transition: all 0.2s;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .footswitch-led.active {
+        background: #ff0000;
+        box-shadow: 0 0 15px #ff0000, 0 0 25px #ff0000,
+          inset 0 0 8px rgba(255, 255, 255, 0.5);
+      }
+
+      .footswitch-label {
+        position: absolute;
+        bottom: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 9px;
+        color: #666;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      .brand-label {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 11px;
+        color: #999;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+      }
+
+      .model-name {
+        text-align: center;
+        font-size: 18px;
+        color: #ff0000;
+        font-weight: 900;
+        letter-spacing: 2px;
+        margin-top: 5px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      select::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      select::-webkit-scrollbar-track {
+        background: #1a1a1a;
+      }
+
+      select::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+      const { useState, useEffect, useRef } = React;
+
+      const TunerApp = () => {
+        const [isListening, setIsListening] = useState(false);
+        const [pitch, setPitch] = useState({
+          note: "--",
+          octave: "",
+          cents: 0,
+          freq: 0,
+        });
+        const [devices, setDevices] = useState([]);
+        const [selectedId, setSelectedId] = useState("");
+        const [instrument, setInstrument] = useState("guitar");
+        const [signal, setSignal] = useState(0);
+
+        const audioCtx = useRef(null);
+        const analyser = useRef(null);
+        const requestRef = useRef();
+        const dataArray = useRef(null);
+        const wakeLock = useRef(null);
+        const lastGoodPitch = useRef({
+          note: "--",
+          octave: "",
+          cents: 0,
+          freq: 0,
+        });
+
+        const tunings = {
+          guitar: ["E2", "A2", "D3", "G3", "B3", "E4"],
+          bass: ["E1", "A1", "D2", "G2"],
+        };
+
+        const requestWakeLock = async () => {
+          try {
+            if ("wakeLock" in navigator) {
+              wakeLock.current = await navigator.wakeLock.request("screen");
+            }
+          } catch (err) {
+            console.error(err);
+          }
+        };
+
+        const releaseWakeLock = () => {
+          if (wakeLock.current != null) {
+            wakeLock.current.release();
+            wakeLock.current = null;
+          }
+        };
+
+        useEffect(() => {
+          if (isListening) {
+            requestWakeLock();
+          } else {
+            releaseWakeLock();
+          }
+
+          const handleVisibilityChange = () => {
+            if (
+              wakeLock.current !== null &&
+              document.visibilityState === "visible"
+            ) {
+              requestWakeLock();
+            }
+          };
+
+          document.addEventListener("visibilitychange", handleVisibilityChange);
+          return () => {
+            document.removeEventListener(
+              "visibilitychange",
+              handleVisibilityChange
+            );
+            releaseWakeLock();
+          };
+        }, [isListening]);
+
+        const autoCorrelate = (buffer, sampleRate) => {
+          let sum = 0;
+          for (let i = 0; i < buffer.length; i++) {
+            sum += buffer[i] * buffer[i];
+          }
+          const rms = Math.sqrt(sum / buffer.length);
+          setSignal(rms);
+
+          if (rms < 0.01) return null;
+
+          const SIZE = buffer.length;
+          const MAX_SAMPLES = Math.floor(SIZE / 2);
+          const yin = new Float32Array(MAX_SAMPLES);
+
+          for (let tau = 0; tau < MAX_SAMPLES; tau++) {
+            for (let i = 0; i < MAX_SAMPLES; i++) {
+              const delta = buffer[i] - buffer[i + tau];
+              yin[tau] += delta * delta;
+            }
+          }
+
+          yin[0] = 1;
+          let runningSum = 0;
+          for (let tau = 1; tau < MAX_SAMPLES; tau++) {
+            runningSum += yin[tau];
+            yin[tau] = runningSum === 0 ? 1 : (yin[tau] * tau) / runningSum;
+          }
+
+          const threshold = 0.15;
+          let tau = 2;
+
+          while (tau < MAX_SAMPLES) {
+            if (yin[tau] < threshold) {
+              while (tau + 1 < MAX_SAMPLES && yin[tau + 1] < yin[tau]) {
+                tau++;
+              }
+              break;
+            }
+            tau++;
+          }
+
+          if (tau === MAX_SAMPLES || yin[tau] >= threshold) return null;
+
+          let betterTau = tau;
+          if (tau > 0 && tau < MAX_SAMPLES - 1) {
+            const s0 = yin[tau - 1];
+            const s1 = yin[tau];
+            const s2 = yin[tau + 1];
+            const denominator = 2 * (2 * s1 - s2 - s0);
+            if (Math.abs(denominator) > 0.0001) {
+              betterTau = tau + (s2 - s0) / denominator;
+            }
+          }
+
+          return sampleRate / betterTau;
+        };
+
+        const freqToNote = (frequency) => {
+          const noteNames = [
+            "C",
+            "C#",
+            "D",
+            "D#",
+            "E",
+            "F",
+            "F#",
+            "G",
+            "G#",
+            "A",
+            "A#",
+            "B",
+          ];
+
+          const noteNum = 12 * Math.log2(frequency / 440);
+          const roundedNoteNum = Math.round(noteNum);
+          const cents = Math.round((noteNum - roundedNoteNum) * 100);
+
+          const midiNote = 69 + roundedNoteNum;
+          const noteIndex = midiNote % 12;
+          const octave = Math.floor(midiNote / 12) - 1;
+
+          return {
+            note: noteNames[noteIndex],
+            octave: octave,
+            cents: cents,
+            freq: frequency.toFixed(2),
+          };
+        };
+
+        const update = () => {
+          if (!analyser.current || !dataArray.current) return;
+
+          analyser.current.getFloatTimeDomainData(dataArray.current);
+          const freq = autoCorrelate(
+            dataArray.current,
+            audioCtx.current.sampleRate
+          );
+
+          if (freq && freq > 30 && freq < 1200) {
+            const noteInfo = freqToNote(freq);
+
+            const lastNote = lastGoodPitch.current;
+            const noteDiff = Math.abs(noteInfo.cents - lastNote.cents);
+
+            if (
+              noteInfo.note !== lastNote.note ||
+              noteInfo.octave !== lastNote.octave ||
+              noteDiff > 5 ||
+              lastNote.note === "--"
+            ) {
+              lastGoodPitch.current = noteInfo;
+              setPitch(noteInfo);
+            } else if (noteDiff > 1) {
+              lastGoodPitch.current = noteInfo;
+              setPitch(noteInfo);
+            }
+          }
+
+          requestRef.current = requestAnimationFrame(update);
+        };
+
+        const toggle = async () => {
+          if (isListening) {
+            cancelAnimationFrame(requestRef.current);
+            window.streamRef?.getTracks().forEach((t) => t.stop());
+            audioCtx.current?.close();
+            setIsListening(false);
+            setPitch({ note: "--", octave: "", cents: 0, freq: 0 });
+            lastGoodPitch.current = {
+              note: "--",
+              octave: "",
+              cents: 0,
+              freq: 0,
+            };
+            setSignal(0);
+          } else {
+            try {
+              const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                  deviceId: selectedId ? { exact: selectedId } : undefined,
+                  echoCancellation: false,
+                  noiseSuppression: false,
+                  autoGainControl: false,
+                  sampleRate: 44100,
+                  latency: 0,
+                },
+              });
+              window.streamRef = stream;
+
+              audioCtx.current = new (window.AudioContext ||
+                window.webkitAudioContext)({
+                sampleRate: 44100,
+                latencyHint: "interactive",
+              });
+
+              analyser.current = audioCtx.current.createAnalyser();
+              analyser.current.fftSize = 8192;
+              analyser.current.smoothingTimeConstant = 0;
+
+              dataArray.current = new Float32Array(analyser.current.fftSize);
+
+              audioCtx.current
+                .createMediaStreamSource(stream)
+                .connect(analyser.current);
+
+              setIsListening(true);
+              requestRef.current = requestAnimationFrame(update);
+            } catch (e) {
+              alert("Erro ao acessar entrada de áudio: " + e.message);
+            }
+          }
+        };
+
+        useEffect(() => {
+          navigator.mediaDevices.enumerateDevices().then((d) => {
+            const inputs = d.filter((i) => i.kind === "audioinput");
+            setDevices(inputs);
+            if (inputs.length) {
+              setSelectedId(inputs[inputs.length - 1].deviceId);
+            }
+          });
+        }, []);
+
+        const renderLedBar = () => {
+          const segments = [];
+          const totalSegments = 21;
+          const centerIndex = 10;
+
+          for (let i = 0; i < totalSegments; i++) {
+            let className = "led-segment";
+
+            if (isListening && pitch.note !== "--") {
+              const targetIndex =
+                centerIndex + Math.round((pitch.cents / 50) * 10);
+
+              if (Math.abs(pitch.cents) <= 3) {
+                if (i >= centerIndex - 1 && i <= centerIndex + 1) {
+                  className += " active-green";
+                }
+              } else {
+                if (
+                  i === Math.max(0, Math.min(totalSegments - 1, targetIndex))
+                ) {
+                  const distFromCenter = Math.abs(i - centerIndex);
+                  if (distFromCenter <= 3) {
+                    className += " active-orange";
+                  } else {
+                    className += " active-red";
+                  }
+                }
+              }
+            }
+
+            segments.push(<div key={i} className={className}></div>);
+          }
+
+          return segments;
+        };
+
+        const isTuned = isListening && Math.abs(pitch.cents) <= 3;
+
+        return (
+          <div className='pedal-body'>
+            <div className='display-area'>
+              <div className='led-bar-container'>{renderLedBar()}</div>
+
+              <div className='note-display-container'>
+                <div className='mode-label'>CHROMATIC</div>
+                <div className={`note-display ${isTuned ? "tuned" : ""}`}>
+                  {pitch.note}
+                  {pitch.octave}
+                </div>
+                <div className='check-indicator'>{isTuned ? "✓" : ""}</div>
+              </div>
+
+              <div className={`cents-display ${isTuned ? "tuned" : ""}`}>
+                {isListening && pitch.freq > 0
+                  ? `${pitch.cents > 0 ? "+" : ""}${pitch.cents} cents`
+                  : "A4=440Hz"}
+              </div>
+
+              <div className='freq-display'>
+                {isListening && pitch.freq > 0 ? `${pitch.freq} Hz` : ""}
+              </div>
+
+              <div className='tuning-reference'>
+                {tunings[instrument].map((note, i) => (
+                  <div key={i} className='string-ref'>
+                    <span className='number'>{i + 1}</span>
+                    {note}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className='controls-area'>
+              <div className='button-row'>
+                <button
+                  className={`mode-button ${
+                    instrument === "guitar" ? "active" : ""
+                  }`}
+                  onClick={() => setInstrument("guitar")}
+                >
+                  Guitar
+                </button>
+                <button
+                  className={`mode-button ${
+                    instrument === "bass" ? "active" : ""
+                  }`}
+                  onClick={() => setInstrument("bass")}
+                >
+                  Bass
+                </button>
+              </div>
+
+              <div style={{ position: "relative" }}>
+                <select
+                  value={selectedId}
+                  onChange={(e) => setSelectedId(e.target.value)}
+                  className='input-select'
+                >
+                  {devices.map((d) => (
+                    <option key={d.deviceId} value={d.deviceId}>
+                      {d.label || "Audio Input"}
+                    </option>
+                  ))}
+                </select>
+                <div
+                  className={`signal-indicator ${
+                    signal > 0.01 ? "active" : ""
+                  }`}
+                ></div>
+              </div>
+
+              <button className='footswitch' onClick={toggle}>
+                <div
+                  className={`footswitch-led ${isListening ? "active" : ""}`}
+                ></div>
+                <div className='footswitch-label'>Bypass</div>
+              </button>
+            </div>
+
+            <div className='brand-label'>BOSS</div>
+            <div className='model-name'>
+              Chromatic Tuner
+              <br />
+              TU-3
+            </div>
+          </div>
+        );
+      };
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<TunerApp />);
+
+      // Service Worker Registration for PWA
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          const swCode = `
+            self.addEventListener('install', (e) => {
+              self.skipWaiting();
+            });
+            self.addEventListener('activate', (e) => {
+              self.clients.claim();
+            });
+            self.addEventListener('fetch', (e) => {
+              e.respondWith(
+                caches.match(e.request).then(response => response || fetch(e.request))
+              );
+            });
+          `;
+          const blob = new Blob([swCode], { type: "application/javascript" });
+          const swUrl = URL.createObjectURL(blob);
+
+          navigator.serviceWorker
+            .register(swUrl)
+            .then(() => console.log("PWA Ready!"))
+            .catch((err) => console.log("SW registration failed:", err));
+        });
+      }
+    </script>
+  </body>
+</html>
