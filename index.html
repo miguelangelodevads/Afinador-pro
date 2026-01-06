@@ -332,6 +332,121 @@
         background: #333;
         border-radius: 4px;
       }
+
+      .install-prompt {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+        border: 2px solid #ff0000;
+        border-radius: 12px;
+        padding: 20px;
+        max-width: 340px;
+        width: calc(100% - 40px);
+        box-shadow: 0 10px 40px rgba(255, 0, 0, 0.3);
+        z-index: 1000;
+        animation: slideUp 0.4s ease;
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateX(-50%) translateY(100px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(-50%) translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .install-prompt-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .install-prompt-icon {
+        width: 48px;
+        height: 48px;
+        background: #ff0000;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 900;
+        color: white;
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+      }
+
+      .install-prompt-title {
+        font-size: 16px;
+        font-weight: 900;
+        color: #ff0000;
+        text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        letter-spacing: 1px;
+      }
+
+      .install-prompt-text {
+        color: #999;
+        font-size: 12px;
+        line-height: 1.5;
+        margin-bottom: 16px;
+      }
+
+      .install-prompt-buttons {
+        display: flex;
+        gap: 10px;
+      }
+
+      .install-btn {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #ff0000;
+        border-radius: 8px;
+        background: linear-gradient(145deg, #ff0000, #cc0000);
+        color: white;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: "Orbitron", sans-serif;
+        box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+      }
+
+      .install-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 0, 0, 0.5);
+      }
+
+      .install-btn:active {
+        transform: translateY(0);
+      }
+
+      .dismiss-btn {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #333;
+        border-radius: 8px;
+        background: transparent;
+        color: #666;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: "Orbitron", sans-serif;
+      }
+
+      .dismiss-btn:hover {
+        border-color: #666;
+        color: #999;
+      }
     </style>
   </head>
   <body>
@@ -356,6 +471,8 @@
         const [selectedId, setSelectedId] = useState("");
         const [instrument, setInstrument] = useState("guitar");
         const [signal, setSignal] = useState(0);
+        const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+        const [deferredPrompt, setDeferredPrompt] = useState(null);
 
         const audioCtx = useRef(null);
         const analyser = useRef(null);
@@ -599,7 +716,44 @@
               setSelectedId(inputs[inputs.length - 1].deviceId);
             }
           });
+
+          const handleBeforeInstallPrompt = (e) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+            
+            const dismissed = localStorage.getItem('installPromptDismissed');
+            if (!dismissed) {
+              setTimeout(() => {
+                setShowInstallPrompt(true);
+              }, 2000);
+            }
+          };
+
+          window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+          return () => {
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+          };
         }, []);
+
+        const handleInstall = async () => {
+          if (!deferredPrompt) return;
+
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          
+          if (outcome === 'accepted') {
+            console.log('App instalado!');
+          }
+          
+          setDeferredPrompt(null);
+          setShowInstallPrompt(false);
+        };
+
+        const handleDismiss = () => {
+          localStorage.setItem('installPromptDismissed', 'true');
+          setShowInstallPrompt(false);
+        };
 
         const renderLedBar = () => {
           const segments = [];
@@ -640,93 +794,116 @@
         const isTuned = isListening && Math.abs(pitch.cents) <= 3;
 
         return (
-          <div className='pedal-body'>
-            <div className='display-area'>
-              <div className='led-bar-container'>{renderLedBar()}</div>
+          <>
+            <div className='pedal-body'>
+              <div className='display-area'>
+                <div className='led-bar-container'>{renderLedBar()}</div>
 
-              <div className='note-display-container'>
-                <div className='mode-label'>CHROMATIC</div>
-                <div className={`note-display ${isTuned ? "tuned" : ""}`}>
-                  {pitch.note}
-                  {pitch.octave}
-                </div>
-                <div className='check-indicator'>{isTuned ? "✓" : ""}</div>
-              </div>
-
-              <div className={`cents-display ${isTuned ? "tuned" : ""}`}>
-                {isListening && pitch.freq > 0
-                  ? `${pitch.cents > 0 ? "+" : ""}${pitch.cents} cents`
-                  : "A4=440Hz"}
-              </div>
-
-              <div className='freq-display'>
-                {isListening && pitch.freq > 0 ? `${pitch.freq} Hz` : ""}
-              </div>
-
-              <div className='tuning-reference'>
-                {tunings[instrument].map((note, i) => (
-                  <div key={i} className='string-ref'>
-                    <span className='number'>{i + 1}</span>
-                    {note}
+                <div className='note-display-container'>
+                  <div className='mode-label'>CHROMATIC</div>
+                  <div className={`note-display ${isTuned ? "tuned" : ""}`}>
+                    {pitch.note}
+                    {pitch.octave}
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className='check-indicator'>{isTuned ? "✓" : ""}</div>
+                </div>
 
-            <div className='controls-area'>
-              <div className='button-row'>
-                <button
-                  className={`mode-button ${
-                    instrument === "guitar" ? "active" : ""
-                  }`}
-                  onClick={() => setInstrument("guitar")}
-                >
-                  Guitar
-                </button>
-                <button
-                  className={`mode-button ${
-                    instrument === "bass" ? "active" : ""
-                  }`}
-                  onClick={() => setInstrument("bass")}
-                >
-                  Bass
-                </button>
-              </div>
+                <div className={`cents-display ${isTuned ? "tuned" : ""}`}>
+                  {isListening && pitch.freq > 0
+                    ? `${pitch.cents > 0 ? "+" : ""}${pitch.cents} cents`
+                    : "A4=440Hz"}
+                </div>
 
-              <div style={{ position: "relative" }}>
-                <select
-                  value={selectedId}
-                  onChange={(e) => setSelectedId(e.target.value)}
-                  className='input-select'
-                >
-                  {devices.map((d) => (
-                    <option key={d.deviceId} value={d.deviceId}>
-                      {d.label || "Audio Input"}
-                    </option>
+                <div className='freq-display'>
+                  {isListening && pitch.freq > 0 ? `${pitch.freq} Hz` : ""}
+                </div>
+
+                <div className='tuning-reference'>
+                  {tunings[instrument].map((note, i) => (
+                    <div key={i} className='string-ref'>
+                      <span className='number'>{i + 1}</span>
+                      {note}
+                    </div>
                   ))}
-                </select>
-                <div
-                  className={`signal-indicator ${
-                    signal > 0.01 ? "active" : ""
-                  }`}
-                ></div>
+                </div>
               </div>
 
-              <button className='footswitch' onClick={toggle}>
-                <div
-                  className={`footswitch-led ${isListening ? "active" : ""}`}
-                ></div>
-                <div className='footswitch-label'>Bypass</div>
-              </button>
+              <div className='controls-area'>
+                <div className='button-row'>
+                  <button
+                    className={`mode-button ${
+                      instrument === "guitar" ? "active" : ""
+                    }`}
+                    onClick={() => setInstrument("guitar")}
+                  >
+                    Guitar
+                  </button>
+                  <button
+                    className={`mode-button ${
+                      instrument === "bass" ? "active" : ""
+                    }`}
+                    onClick={() => setInstrument("bass")}
+                  >
+                    Bass
+                  </button>
+                </div>
+
+                <div style={{ position: "relative" }}>
+                  <select
+                    value={selectedId}
+                    onChange={(e) => setSelectedId(e.target.value)}
+                    className='input-select'
+                  >
+                    {devices.map((d) => (
+                      <option key={d.deviceId} value={d.deviceId}>
+                        {d.label || "Audio Input"}
+                      </option>
+                    ))}
+                  </select>
+                  <div
+                    className={`signal-indicator ${
+                      signal > 0.01 ? "active" : ""
+                    }`}
+                  ></div>
+                </div>
+
+                <button className='footswitch' onClick={toggle}>
+                  <div
+                    className={`footswitch-led ${isListening ? "active" : ""}`}
+                  ></div>
+                  <div className='footswitch-label'>Bypass</div>
+                </button>
+              </div>
+
+              <div className='brand-label'>BOSS</div>
+              <div className='model-name'>
+                Chromatic Tuner
+                <br />
+                TU-3
+              </div>
             </div>
 
-            <div className='brand-label'>BOSS</div>
-            <div className='model-name'>
-              Chromatic Tuner
-              <br />
-              TU-3
-            </div>
-          </div>
+            {showInstallPrompt && (
+              <div className='install-prompt'>
+                <div className='install-prompt-header'>
+                  <div className='install-prompt-icon'>TU3</div>
+                  <div className='install-prompt-title'>Instalar Afinador</div>
+                </div>
+                <div className='install-prompt-text'>
+                  Instale o TU-3 Tuner no seu dispositivo para acesso rápido offline, 
+                  como um app nativo! Funciona sem internet depois de instalado.
+                </div>
+                <div className='install-prompt-buttons'>
+                  <button className='install-btn' onClick={handleInstall}>
+                    Instalar
+                  </button>
+                  <button className='dismiss-btn' onClick={handleDismiss}>
+                    Agora Não
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         );
       };
 
