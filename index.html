@@ -16,7 +16,7 @@
     <meta name="apple-mobile-web-app-title" content="TU-3 Tuner" />
     <link
       rel="manifest"
-      href="data:application/json;base64,ewogICJuYW1lIjogIkNocm9tYXRpYyBUdW5lciBUVS0zIiwKICAic2hvcnRfbmFtZSI6ICJUVS0zIiwKICAiZGVzY3JpcHRpb24iOiAiQWZpbmFkb3IgQ3JvbcOhdGljbyBFc3RpbG8gQm9zcyBUVS0zIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxYTFhMWEiLAogICJ0aGVtZV9jb2xvciI6ICIjMTExODI3IiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWwsJTNDc3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDUxMiA1MTInJTNFJTNDcmVjdCB3aWR0aD0nNTEyJyBoZWlnaHQ9JzUxMicgZmlsbD0nJTIzZmYwMDAwJy8lM0UlM0N0ZXh0IHg9JzUwJTI1JyB5PSc1MCUyNScgZm9udC1zaXplPScyMDAnIGZvbnQtd2VpZ2h0PSdib2xkJyBmb250LWZhbWlseT0nbW9ub3NwYWNlJyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZScgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZSclM0VUVTMlM0MvdGV4dCUzRSUzQy9zdmclM0U"LAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiLAogICAgICAicHVycG9zZSI6ICJhbnkgbWFza2FibGUiCiAgICB9CiAgXQp9"
+      href="data:application/json;base64,ewogICJuYW1lIjogIkNocm9tYXRpYyBUdW5lciBUVS0zIiwKICAic2hvcnRfbmFtZSI6ICJUVS0zIiwKICAiZGVzY3JpcHRpb24iOiAiQWZpbmFkb3IgQ3JvbcOhdGljbyBFc3RpbG8gQm9zcyBUVS0zIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxYTFhMWEiLAogICJ0aGVtZV9jb2xvciI6ICIjMTExODI3IiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWwsJTNDc3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDUxMiA1MTInJTNFJTNDcmVjdCB3aWR0aD0nNTEyJyBoZWlnaHQ9JzUxMicgZmlsbD0nJTIzZmYwMDAwJy8lM0UlM0N0ZXh0IHg9JzUwJTI1JyB5PSc1MCUyNScgZm9udC1zaXplPScyMDAnIGZvbnQtd2VpZ2h0PSdib2xkJyBmb250LWZhbWlseT0nbW9ub3NwYWNlJyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZScgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZSclM0VUVTMlM0MvdGV4dCUzRSUzQy9zdmclM0UiLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiLAogICAgICAicHVycG9zZSI6ICJhbnkgbWFza2FibGUiCiAgICB9CiAgXQp9"
     />
     <title>Chromatic Tuner TU-3</title>
 
@@ -76,7 +76,7 @@
         background: rgba(255, 255, 255, 0.05);
         border-radius: 2px;
         position: relative;
-        transition: all 0.05s ease;
+        transition: all 0.08s ease;
         will-change: background, box-shadow;
       }
 
@@ -368,7 +368,6 @@
           cents: 0,
           freq: 0,
         });
-        const pitchHistory = useRef([]);
 
         const tunings = {
           guitar: ["E2", "A2", "D3", "G3", "B3", "E4"],
@@ -430,37 +429,51 @@
 
           const SIZE = buffer.length;
           const MAX_SAMPLES = Math.floor(SIZE / 2);
-          
           let bestOffset = -1;
           let bestCorrelation = 0;
-          let foundGoodCorrelation = false;
-          
-          for (let offset = 1; offset < MAX_SAMPLES; offset++) {
+          const correlations = new Float32Array(MAX_SAMPLES);
+
+          for (let offset = 0; offset < MAX_SAMPLES; offset++) {
             let correlation = 0;
-            
             for (let i = 0; i < MAX_SAMPLES; i++) {
-              correlation += Math.abs(buffer[i] - buffer[i + offset]);
+              correlation += buffer[i] * buffer[i + offset];
             }
+            correlations[offset] = correlation;
+          }
+
+          let lastCorrelation = 1;
+          for (let offset = 1; offset < MAX_SAMPLES; offset++) {
+            const correlation = correlations[offset] / correlations[0];
             
-            correlation = 1 - (correlation / MAX_SAMPLES);
-            
-            if (correlation > 0.9 && !foundGoodCorrelation) {
-              foundGoodCorrelation = true;
-              bestCorrelation = correlation;
-              bestOffset = offset;
+            if (correlation > 0.9 && correlation > lastCorrelation) {
+              const nextCorrelation = offset + 1 < MAX_SAMPLES ? correlations[offset + 1] / correlations[0] : 0;
+              
+              if (correlation > nextCorrelation) {
+                bestCorrelation = correlation;
+                bestOffset = offset;
+                break;
+              }
             }
+            lastCorrelation = correlation;
+          }
+
+          if (bestOffset === -1 || bestCorrelation < 0.9) {
+            return null;
+          }
+
+          if (bestOffset > 0 && bestOffset < MAX_SAMPLES - 1) {
+            const y1 = correlations[bestOffset - 1];
+            const y2 = correlations[bestOffset];
+            const y3 = correlations[bestOffset + 1];
+            const a = (y1 + y3 - 2 * y2) / 2;
+            const b = (y3 - y1) / 2;
             
-            if (foundGoodCorrelation && correlation > bestCorrelation) {
-              bestCorrelation = correlation;
-              bestOffset = offset;
+            if (a !== 0) {
+              bestOffset = bestOffset - b / (2 * a);
             }
           }
 
-          if (bestCorrelation > 0.9 && bestOffset !== -1) {
-            return sampleRate / bestOffset;
-          }
-
-          return null;
+          return sampleRate / bestOffset;
         };
 
         const freqToNote = (frequency) => {
@@ -506,24 +519,17 @@
 
           if (freq && freq > 30 && freq < 1200) {
             const noteInfo = freqToNote(freq);
-            
-            pitchHistory.current.push(noteInfo);
-            if (pitchHistory.current.length > 3) {
-              pitchHistory.current.shift();
-            }
+            const lastNote = lastGoodPitch.current;
 
-            if (pitchHistory.current.length >= 2) {
-              const recentNotes = pitchHistory.current.slice(-2);
-              const allSameNote = recentNotes.every(
-                p => p.note === noteInfo.note && p.octave === noteInfo.octave
+            if (
+              noteInfo.note === lastNote.note &&
+              noteInfo.octave === lastNote.octave &&
+              lastNote.note !== "--"
+            ) {
+              const smoothedCents = Math.round(
+                lastNote.cents * 0.6 + noteInfo.cents * 0.4
               );
-
-              if (allSameNote) {
-                const avgCents = Math.round(
-                  recentNotes.reduce((sum, p) => sum + p.cents, 0) / recentNotes.length
-                );
-                noteInfo.cents = avgCents;
-              }
+              noteInfo.cents = smoothedCents;
             }
 
             lastGoodPitch.current = noteInfo;
@@ -546,7 +552,6 @@
               cents: 0,
               freq: 0,
             };
-            pitchHistory.current = [];
             setSignal(0);
           } else {
             try {
@@ -556,7 +561,7 @@
                   echoCancellation: false,
                   noiseSuppression: false,
                   autoGainControl: false,
-                  sampleRate: 48000,
+                  sampleRate: 44100,
                   latency: 0,
                 },
               });
@@ -564,12 +569,12 @@
 
               audioCtx.current = new (window.AudioContext ||
                 window.webkitAudioContext)({
-                sampleRate: 48000,
+                sampleRate: 44100,
                 latencyHint: "interactive",
               });
 
               analyser.current = audioCtx.current.createAnalyser();
-              analyser.current.fftSize = 4096;
+              analyser.current.fftSize = 8192;
               analyser.current.smoothingTimeConstant = 0;
 
               dataArray.current = new Float32Array(analyser.current.fftSize);
